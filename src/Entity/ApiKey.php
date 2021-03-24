@@ -123,49 +123,49 @@ class ApiKey
     }
 
     /**
-     * @return DateTime
+     * @return DateTime|null
      */
-    public function getCreatedAt(): DateTime
+    public function getCreatedAt(): ?DateTime
     {
         return $this->createdAt;
     }
 
     /**
-     * @param DateTime $createdAt
+     * @param DateTime|null $createdAt
      */
-    public function setCreatedAt(DateTime $createdAt): void
+    public function setCreatedAt(?DateTime $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
 
     /**
-     * @return DateTime
+     * @return DateTime|null
      */
-    public function getUpdatedAt(): DateTime
+    public function getUpdatedAt(): ?DateTime
     {
         return $this->updatedAt;
     }
 
     /**
-     * @param DateTime $updatedAt
+     * @param DateTime|null $updatedAt
      */
-    public function setUpdatedAt(DateTime $updatedAt): void
+    public function setUpdatedAt(?DateTime $updatedAt): void
     {
         $this->updatedAt = $updatedAt;
     }
 
     /**
-     * @return DateTime
+     * @return DateTime|null
      */
-    public function getExpireAt(): DateTime
+    public function getExpireAt(): ?DateTime
     {
         return $this->expireAt;
     }
 
     /**
-     * @param DateTime $expireAt
+     * @param DateTime|null $expireAt
      */
-    public function setExpireAt(DateTime $expireAt): void
+    public function setExpireAt(?DateTime $expireAt): void
     {
         $this->expireAt = $expireAt;
     }

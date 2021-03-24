@@ -1,16 +1,17 @@
 <?php
 
-namespace RL;
+namespace RL\Security\Authenticator;
 
 use InvalidArgumentException;
 use RL\Exception\AccessDeniedException;
 use RL\Repository\ApiKeyRepository;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\PreAuthenticatedToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\Authentication\SimplePreAuthenticatorInterface;
 
-class Authenticator implements SimplePreAuthenticatorInterface
+class ApiKeyAuthenticator implements SimplePreAuthenticatorInterface
 {
     private ApiKeyRepository $apiKeyRepository;
 
@@ -36,6 +37,27 @@ class Authenticator implements SimplePreAuthenticatorInterface
         }
     }
 
+    public function supportsToken(TokenInterface $token, $providerKey)
+    {
+        return $token instanceof PreAuthenticatedToken && $token->getProviderKey() === $providerKey;
+    }
+
+    public function createToken(Request $request, $providerKey)
+    {
+        $apiKey = $request->headers->get('X-API-Key');
+
+        if (!$apiKey) {
+            return null;
+        }
+
+        $preAuthenticatedToken = new PreAuthenticatedToken('anon.', $apiKey, $providerKey);
+
+        $preAuthenticatedToken->setAttribute('method', $request->getMethod());
+        $preAuthenticatedToken->setAttribute('route', $request->getPathInfo());
+
+        return $preAuthenticatedToken;
+    }
+
     public function validateTokenRouteAndMethod($token, $route, $method)
     {
         if ($token = $this->apiKeyRepository->findByToken($token)) {
@@ -55,10 +77,5 @@ class Authenticator implements SimplePreAuthenticatorInterface
         }
 
         return null;
-    }
-
-    public function supportsToken(TokenInterface $token, $providerKey)
-    {
-        return $token instanceof PreAuthenticatedToken && $token->getProviderKey() === $providerKey;
     }
 }
