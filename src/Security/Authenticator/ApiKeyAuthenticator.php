@@ -4,14 +4,14 @@ namespace RL\Security\Authenticator;
 
 use InvalidArgumentException;
 use RL\Exception\AccessDeniedException;
+use RL\Provider\AppProvider;
 use RL\Repository\ApiKeyRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\PreAuthenticatedToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Http\Authentication\SimplePreAuthenticatorInterface;
 
-class ApiKeyAuthenticator implements SimplePreAuthenticatorInterface
+class ApiKeyAuthenticator
 {
     private ApiKeyRepository $apiKeyRepository;
 
@@ -28,7 +28,10 @@ class ApiKeyAuthenticator implements SimplePreAuthenticatorInterface
             return false;
         }
 
-        if ($tokenRecord = $this->validateTokenRouteAndMethod($token->getCredentials(), $route, $method)) {
+        /**
+         * @var  $userProvider AppProvider
+         */
+        if ($tokenRecord = $userProvider->validateTokenRouteAndMethod($token->getCredentials(), $route, $method)) {
             $token->setUser($tokenRecord->getApp());
 
             return $token;

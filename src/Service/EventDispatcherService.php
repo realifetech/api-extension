@@ -2,9 +2,8 @@
 
 namespace RL\Service;
 
-use LS\Apollo\UserManagement\Entity\App;
 use LS\Apollo\App\Exception\EventDispatchException;
-use LS\Apollo\UserManagement\Repository\AppConfigRepository;
+use RL\Repository\AppConfigRepository;
 use LS\Apollo\Hydration\Service\HydratorService;
 use LS\Apollo\Queue\EventBus\EventBusClient;
 use LS\Apollo\Queue\Producer\QueueProducer;
@@ -78,8 +77,18 @@ class EventDispatcherService
         $this->queueUrl            = $queueUrl;
     }
 
+    /**
+     * @param int $app
+     * @param string $type
+     * @param string $action
+     * @param object|null $new
+     * @param object|null $old
+     * @param array $groups
+     * @param string $prefix
+     * @param array $meta
+     */
     public function putEvent(
-        App $app,
+        int $app,
         string $type,
         string $action,
         $new = null,
@@ -88,24 +97,21 @@ class EventDispatcherService
         string $prefix = '',
         array $meta = []
     ) {
-
         $name = $prefix . $type . '.' . $action;
 
         $configuredEvents = $this->getConfiguredEvents($app);
-        $appId            = $app->getId();
 
         if (!(int)$this->appConfigRepository->getValueByAppAndKey($app, self::APP_CONFIG)) {
-            $this->logger->info("EVENT DISPATCHER: event dispatcher disabled for the app: {$appId}");
+            $this->logger->info("EVENT DISPATCHER: event dispatcher disabled for the app: {$app}");
+
             return;
         }
 
         if (!$this->eventIsConfigured($configuredEvents, $name)) {
-            $this->logger->info("EVENT DISPATCHER: Event {$name} ignored due to event configuration for the
-                app: {$appId}");
+            $this->logger->info("EVENT DISPATCHER: Event {$name} ignored due to event configuration for the app: {$app}");
+
             return;
         }
-
-        $meta = $this->getMeta($meta);
 
         $event = [
             "type"    => $type,
@@ -121,6 +127,7 @@ class EventDispatcherService
                 'groups' => array_merge($groups, ['device:event', 'user:event']),
                 AbstractObjectNormalizer::SKIP_NULL_VALUES => true
             ]);
+
             $this->eventBusClient->putEvent($app, $name, $json);
 
             $this->dispatchOld($app, $name, $new, $groups);
@@ -185,10 +192,10 @@ class EventDispatcherService
     }
 
     /**
-     * @param App $app
+     * @param int $app
      * @return array
      */
-    protected function getConfiguredEvents(App $app): array
+    protected function getConfiguredEvents(int $app): array
     {
         if ($configuredEvents = $this->appConfigRepository->getValueByAppAndKey($app, self::APP_CONFIG_EVENTS)) {
             $configuredEvents = json_decode($configuredEvents, true);
