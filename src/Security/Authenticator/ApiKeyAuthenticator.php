@@ -5,7 +5,6 @@ namespace RL\Security\Authenticator;
 use InvalidArgumentException;
 use RL\Exception\AccessDeniedException;
 use RL\Provider\AppProvider;
-use RL\Repository\ApiKeyRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\PreAuthenticatedToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -13,12 +12,6 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class ApiKeyAuthenticator
 {
-    private ApiKeyRepository $apiKeyRepository;
-
-    public function __construct(ApiKeyRepository $apiKeyRepository) {
-        $this->apiKeyRepository = $apiKeyRepository;
-    }
-
     public function authenticateToken(TokenInterface $token, UserProviderInterface $userProvider, $providerKey)
     {
         try {
@@ -59,26 +52,5 @@ class ApiKeyAuthenticator
         $preAuthenticatedToken->setAttribute('route', $request->getPathInfo());
 
         return $preAuthenticatedToken;
-    }
-
-    public function validateTokenRouteAndMethod($token, $route, $method)
-    {
-        if ($token = $this->apiKeyRepository->findByToken($token)) {
-            $accesses = $token->getApiKeyAccesses();
-
-            foreach ($accesses as $access) {
-                if (fnmatch(
-                        $access->getRoute(),
-                        $route
-                    ) && (strtoupper($access->getMethod()) === 'ANY' || strcasecmp(
-                            $method,
-                            $access->getMethod()
-                        ) == 0)) {
-                    return $token;
-                }
-            }
-        }
-
-        return null;
     }
 }

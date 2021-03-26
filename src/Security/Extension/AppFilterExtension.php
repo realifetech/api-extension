@@ -7,24 +7,21 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class AppFilterExtension implements QueryItemExtensionInterface
 {
+    const DEFAULT_APP = 27;
+
     /** @var Reader */
     private Reader $reader;
 
     /** @var ObjectManager */
     private ObjectManager $em;
 
-    /** @var TokenStorageInterface */
-    private TokenStorageInterface $tokenStorage;
-
-    public function __construct(Reader $reader, ObjectManager $em, TokenStorageInterface $tokenStorage)
+    public function __construct(Reader $reader, ObjectManager $em)
     {
         $this->reader = $reader;
         $this->em = $em;
-        $this->tokenStorage = $tokenStorage;
     }
 
     public function applyToItem(
@@ -50,25 +47,8 @@ class AppFilterExtension implements QueryItemExtensionInterface
 
     private function enableAppFilter(): void
     {
-        $currentApp = $this->getUser();
-
-        if (!$currentApp) {
-            return;
-        }
-
         $filter = $this->em->getFilters()->enable('app_filter');
-        $filter->setParameter('currentApp', $currentApp->getId());
+        $filter->setParameter('currentApp', self::DEFAULT_APP);
         $filter->setAnnotationReader($this->reader);
-    }
-
-    private function getUser()
-    {
-        $token = $this->tokenStorage->getToken();
-
-        if (!$token) {
-            return null;
-        }
-
-        return $token->getUser();
     }
 }

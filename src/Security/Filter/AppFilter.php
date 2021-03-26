@@ -11,8 +11,6 @@ use Doctrine\Common\Annotations\Reader;
  */
 class AppFilter extends SQLFilter
 {
-    const DEFAULT_APP_ID = 27;
-
     /** @var Reader */
     protected Reader $reader;
 
@@ -29,20 +27,10 @@ class AppFilter extends SQLFilter
             return '';
         }
 
-        try {
-            $apps = $this->getParameter('apps');
-        } catch (\InvalidArgumentException $e) {
-            $apps = null;
-        }
-
         $currentApp = $this->getParameter('currentApp');
 
         if (empty($fieldName)) {
             return '';
-        }
-
-        if ($apps) {
-            $query = sprintf('%s.%s IN (%s)', $targetTableAlias, $fieldName, str_replace("'", "", $apps));
         }
 
         if ($currentApp && $fieldName != "id") {

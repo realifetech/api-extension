@@ -21,7 +21,7 @@ class AppConfig
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="smallint", options={"unsigned"=true})
      */
-    protected $id;
+    protected int $id;
 
     /**
      * @ORM\Column(type="integer")
