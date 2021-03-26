@@ -2,79 +2,40 @@
 
 namespace RL\Service;
 
-use LS\Apollo\App\Exception\EventDispatchException;
+use RL\Exception\EventDispatchException;
 use RL\Repository\AppConfigRepository;
-use LS\Apollo\Hydration\Service\HydratorService;
-use LS\Apollo\Queue\EventBus\EventBusClient;
-use LS\Apollo\Queue\Producer\QueueProducer;
+use RL\EventBus\EventBridgeClient;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class EventDispatcherService
 {
-    const APP_CONFIG        = 'event_dispatcher.enabled';
+    const APP_CONFIG = 'event_dispatcher.enabled';
     const APP_CONFIG_EVENTS = 'event_dispatcher.events';
 
-    const EVENT_ORDER_PAYMENT_SUCCESS          = 'order.payment_success';
-    const EVENT_USER_ENGAGEMENT_CREATE_SUCCESS = 'user_engagement.create_success';
-    const EVENT_USER_REGISTER_SUCCESS          = 'user.register_success';
-    const EVENT_USER_LOGIN_SUCCESS             = 'user.login_success';
-    const EVENT_USER_EMAIL_VERIFIED            = 'user_email.verified';
-    const EVENT_DEVICE_REGISTER_SUCCESS        = 'device.register_success';
-    const EVENT_DEVICE_TOKEN_UPDATE            = 'device_token.update';
-    const DEVICE_CONSENT_UPDATE                = 'device_consent.update';
-    const TICKET_AUTH_CREATED                  = 'ticket.auth_created';
-    const TICKET_CREATED                       = 'ticket.created';
-    const TICKET_SHARED                        = 'ticket.shared';
-    const TICKET_REDEEMED                      = 'ticket.redeemed';
-    const USER_UPDATE                          = 'user.update';
-    const USER_SYNC_TICKETS                    = 'user.sync_tickets';
-    const USER_BIRTHDAY                        = 'user.birthday';
+    /** @var AppConfigRepository */
+    private AppConfigRepository $appConfigRepository;
 
-    const EVENTS = [
-        self::EVENT_ORDER_PAYMENT_SUCCESS,
-        self::EVENT_USER_REGISTER_SUCCESS,
-        self::EVENT_DEVICE_REGISTER_SUCCESS,
-        self::TICKET_AUTH_CREATED,
-        self::TICKET_CREATED,
-        self::EVENT_USER_LOGIN_SUCCESS,
-        self::DEVICE_CONSENT_UPDATE,
-        self::USER_UPDATE,
-        self::EVENT_USER_ENGAGEMENT_CREATE_SUCCESS,
-        self::EVENT_DEVICE_TOKEN_UPDATE,
-        self::TICKET_SHARED,
-        self::TICKET_REDEEMED,
-        self::USER_SYNC_TICKETS,
-        self::USER_SYNC_TICKETS,
-        self::USER_BIRTHDAY,
-        self::EVENT_USER_EMAIL_VERIFIED
-    ];
+    /** @var LoggerInterface */
+    private LoggerInterface $logger;
 
-    private $queueProducer;
-    private $hydratorService;
-    private $queueUrl;
-    private $appConfigRepository;
-    private $logger;
-    private $eventBusClient;
-    private $serializer;
+    /** @var EventBridgeClient */
+    private EventBridgeClient $eventBridgeClient;
+
+    /** @var SerializerInterface */
+    private SerializerInterface $serializer;
 
     public function __construct(
-        QueueProducer $queueProducer,
-        HydratorService $hydratorService,
         AppConfigRepository $appConfigRepository,
         LoggerInterface $logger,
-        EventBusClient $eventBusClient,
-        SerializerInterface $serializer,
-        string $queueUrl
+        EventBridgeClient $eventBridgeClient,
+        SerializerInterface $serializer
     ) {
-        $this->queueProducer       = $queueProducer;
-        $this->hydratorService     = $hydratorService;
         $this->appConfigRepository = $appConfigRepository;
-        $this->logger              = $logger;
-        $this->eventBusClient      = $eventBusClient;
-        $this->serializer          = $serializer;
-        $this->queueUrl            = $queueUrl;
+        $this->logger = $logger;
+        $this->eventBridgeClient = $eventBridgeClient;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -85,7 +46,6 @@ class EventDispatcherService
      * @param object|null $old
      * @param array $groups
      * @param string $prefix
-     * @param array $meta
      */
     public function putEvent(
         int $app,
@@ -94,8 +54,7 @@ class EventDispatcherService
         $new = null,
         $old = null,
         array $groups = [],
-        string $prefix = '',
-        array $meta = []
+        string $prefix = ''
     ) {
         $name = $prefix . $type . '.' . $action;
 
@@ -119,7 +78,7 @@ class EventDispatcherService
             "new"     => $new,
             "old"     => $old,
             "version" => 1,
-            "meta"    => $meta
+            "meta"    => []
         ];
 
         try {
@@ -128,66 +87,9 @@ class EventDispatcherService
                 AbstractObjectNormalizer::SKIP_NULL_VALUES => true
             ]);
 
-            $this->eventBusClient->putEvent($app, $name, $json);
-
-            $this->dispatchOld($app, $name, $new, $groups);
+            $this->eventBridgeClient->putEvent($app, $name, $json);
         } catch (\Exception $exception) {
             $this->logger->critical($exception);
-        }
-    }
-
-    /**
-     * @param App    $app
-     * @param string $event
-     * @param array  $payload
-     * @param array  $hydrationGroups
-     */
-    public function dispatch(
-        App $app,
-        string $event,
-        array $payload,
-        array $hydrationGroups = []
-    ) {
-        $event = explode('.', $event);
-
-        $this->putEvent($app, $event[0], $event[1], $payload, null, $hydrationGroups);
-    }
-
-
-    /**
-     * @param App    $app
-     * @param string $event
-     * @param array  $payload
-     * @param array  $hydrationGroups
-     * @deprecated this is replaced but putEvent
-     */
-    public function dispatchOld(
-        App $app,
-        string $event,
-        array $payload,
-        array $hydrationGroups = []
-    ) {
-        $appId = $app->getId();
-
-        try {
-            $this->validate($event);
-            $payload = $this->hydratorService->toArray($payload, $hydrationGroups);
-            $this->queueProducer->produceJsonMessage($this->queueUrl, compact('appId', 'event', 'payload'));
-
-            $this->logger->info("EVENT DISPATCHER: Event {$event} dispatched for appId {$appId}");
-        } catch (EventDispatchException $e) {
-            $this->logger->critical("EVENT DISPATCHER ERROR: Event {$event} is not a valid event");
-        }
-    }
-
-    /**
-     * @param string $event
-     * @throws EventDispatchException
-     */
-    private function validate(string $event): void
-    {
-        if (!in_array($event, self::EVENTS) && !preg_match('/entity\..*/', $event)) {
-            throw new EventDispatchException('event_dispatch.event_not_defined');
         }
     }
 
@@ -222,6 +124,7 @@ class EventDispatcherService
                 '/entity\.*/',
                 $event
             ) && $configuredEvents['entity.*'] === false) {
+
             return false;
         }
 
