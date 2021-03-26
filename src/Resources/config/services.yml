@@ -15,64 +15,30 @@ services:
     arguments:
       - RL\Entity\ApiKeyAccess
 
-  RL\Security\Configurator\Configurator:
-    class: LS\ApiBundle\Security\Configurator\Configurator
+  RL\Repository\AppConfigRepository:
+    factory: 'Doctrine\ORM\EntityManagerInterface:getRepository'
     arguments:
-      - "@doctrine.orm.entity_manager"
-      - "@security.token_storage"
-      - "@annotation_reader"
-      - "@session"
-      - '@LS\ApiBundle\Security\AuthAppResolver'
-      - '@LS\ApiBundle\Repository\AccessTokenRepository'
-      - '@LS\UserManagementBundle\Repository\AppRepository'
-      - '@LS\UserManagementBundle\Repository\DeviceRepository'
-    tags:
-      - { name: kernel.event_listener, event: kernel.request,  priority: 5 }
-  LS\ApiBundle\Repository\AnalyticsRepository:
-    class: LS\ApiBundle\Repository\AnalyticsRepository
+      - RL\Entity\AppConfig
+
+  RL\Repository\AnalyticsRepository:
+    class: RL\Repository\AnalyticsRepository
     arguments:
       - "@monolog.logger.api"
-  LS\ApiBundle\Client\FreshContentClient:
-    class: LS\ApiBundle\Client\FreshContentClient
+
+  RL\Security\Configurator\Configurator:
+    class: RL\Security\Configurator\Configurator
     arguments:
-      - "@doctrine_cache.providers.app_cache"
-      - '@LS\ApiBundle\Client\GuzzleClient'
-  LS\ApiBundle\Security\Authenticator\ApiKeyAuthenticator:
-    autowire: true
-  LS\ApiBundle\Security\Authenticator\JwtAuthenticator:
-    autowire: true
-  LS\ApiBundle\Security\AuthAppResolver:
-    autowire: true
-    public: true
-    shared: true
-  LS\ApiBundle\Serializers\ElasticsearchEntityDenormalizer:
-    autowire: true
-    arguments:
-      - '@doctrine.orm.entity_manager'
-      - '@annotation_reader'
+      - "@doctrine.orm.entity_manager"
+      - "@annotation_reader"
     tags:
-      - { 'name': 'serializer.normalizer' }
-  LS\ApiBundle\Serializers\ExternalResourcesNormalizer:
+      - { name: kernel.event_listener, event: kernel.request,  priority: 5 }
+
+  RL\Security\Authenticator\ApiKeyAuthenticator:
     autowire: true
-    arguments:
-      - '@api_platform.jsonld.normalizer.item'
-      - '@LS\ApiBundle\Service\ExternalResourcesService'
-    tags:
-      - { 'name': 'serializer.normalizer', priority: 10 }
-  LS\ApiBundle\Serializers\IriResourcesNormalizer:
+
+  RL\Serializers\IriResourcesNormalizer:
     autowire: true
     arguments:
       - '@api_platform.jsonld.normalizer.item'
     tags:
       - { 'name': 'serializer.normalizer', priority: 10}
-  LS\ApiBundle\DataProvider\Extension\AudienceExtension:
-    arguments:
-      - '@LS\ApiBundle\Service\AudienceFilterService'
-    tags:
-      - { name: api_platform.doctrine.orm.query_extension.item }
-      - { name: api_platform.doctrine.orm.query_extension.collection }
-  LS\ApiBundle\DataProvider\Extension\AudienceElasticSearchExtension:
-    arguments:
-      - '@LS\ApiBundle\Service\AudienceFilterService'
-    tags:
-      - { name: api_platform.elasticsearch.request_body_search_extension.collection }

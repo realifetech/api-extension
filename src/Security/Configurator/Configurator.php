@@ -18,10 +18,6 @@ class Configurator
     /** @var Reader */
     protected Reader $reader;
 
-    /**
-     * @param ObjectManager $em
-     * @param Reader $reader
-     */
     public function __construct(
         ObjectManager $em,
         Reader $reader
