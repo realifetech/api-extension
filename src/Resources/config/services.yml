@@ -1,9 +1,9 @@
 services:
   RL\:
-    resource: '../../../src/*'
+    resource: '../../src/*'
     autowire: true
     public: true
-    exclude: '../../../src/{Repository,Tests,Exception,Security}'
+    exclude: '../../src/{Repository,Tests,Exception,Security}'
 
   RL\Repository\ApiKeyRepository:
     factory: 'Doctrine\ORM\EntityManagerInterface:getRepository'
