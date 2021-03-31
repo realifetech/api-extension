@@ -38,12 +38,12 @@ class AppProvider implements UserProviderInterface
                             $method,
                             $access->getMethod()
                         ) == 0)) {
-                    return true;
+                    return $token;
                 }
             }
         }
 
-        return false;
+        return null;
     }
 
     /**

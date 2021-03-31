@@ -6,6 +6,8 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\Persistence\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
+use RL\Exception\NoApiTokenException;
+use RL\Security\AuthTenantResolver;
 use RL\Service\EventDispatcherService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -18,22 +20,26 @@ class EntityActivitySubscriber implements EventSubscriber
     const UPDATE_EVENT  = 'update';
     const REMOVE_EVENT  = 'remove';
 
-    // TODO remove
-    const APP_ID = 27;
-
     /** @var ContainerInterface */
     private ContainerInterface $container;
 
     /** @var SerializerInterface */
     private SerializerInterface $serializer;
 
+    /** @var AuthTenantResolver */
+    private AuthTenantResolver $authTenantResolver;
+
     /** @var PropertyAccessor */
     private PropertyAccessor $propertyAccessor;
 
-    public function __construct(ContainerInterface $container, SerializerInterface $serializer)
-    {
+    public function __construct(
+        ContainerInterface $container,
+        SerializerInterface $serializer,
+        AuthTenantResolver $authTenantResolver
+    ) {
         $this->container = $container;
         $this->serializer = $serializer;
+        $this->authTenantResolver = $authTenantResolver;
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
     }
 
@@ -130,12 +136,13 @@ class EntityActivitySubscriber implements EventSubscriber
             $object = $new;
         }
 
+        $tenant = $this->authTenantResolver->getTenant();
         $entityName = $this->getShortName($object);
         $type = $this->getEntitySnakeCase($entityName);
 
         $this->getEventDispatcher()
             ->putEvent(
-                self::APP_ID,
+                $tenant,
                 $type,
                 $action,
                 [$type => $new],

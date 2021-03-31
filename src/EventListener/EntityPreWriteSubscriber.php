@@ -3,6 +3,7 @@
 namespace RL\EventListener;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
+use RL\Security\AuthTenantResolver;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -10,33 +11,21 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 final class EntityPreWriteSubscriber implements EventSubscriberInterface
 {
-    // TODO remove
-    const APP_ID = 27;
-    const TENANT_ID = 27;
+    /** @var AuthTenantResolver */
+    private AuthTenantResolver $authTenantResolver;
 
-    /**
-     * @return array
-     */
-    public static function getSubscribedEvents(): array
+    public function __construct(AuthTenantResolver $authTenantResolver)
+    {
+        $this->authTenantResolver = $authTenantResolver;
+    }
+
+    public static function getSubscribedEvents()
     {
         return [
             KernelEvents::VIEW => [
-                ['attachApp', EventPriorities::PRE_VALIDATE],
                 ['attachTenant', EventPriorities::PRE_VALIDATE]
             ],
         ];
-    }
-
-    public function attachApp(ViewEvent $event)
-    {
-        $entity = $event->getControllerResult();
-        $propertyAccessor = new PropertyAccessor();
-
-        if (!is_object($entity) || !$propertyAccessor->isWritable($entity, 'app')) {
-            return;
-        }
-
-        $propertyAccessor->setValue($entity, 'app', self::APP_ID);
     }
 
     public function attachTenant(ViewEvent $event)
@@ -48,6 +37,12 @@ final class EntityPreWriteSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $propertyAccessor->setValue($entity, 'tenant', self::TENANT_ID);
+        $tenant = $this->authTenantResolver->getTenant();
+
+        if (!$tenant) {
+            return;
+        }
+
+        $propertyAccessor->setValue($entity, 'tenant', $tenant);
     }
 }

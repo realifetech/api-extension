@@ -35,7 +35,7 @@ class ApiKey implements UserInterface
     /**
      * @ORM\Column(type="integer", name="app_id")
      */
-    private int $app;
+    private int $tenant;
 
     /**
      * @ORM\Column(type="string")
@@ -86,9 +86,9 @@ class ApiKey implements UserInterface
     /**
      * @return int
      */
-    public function getApp(): int
+    public function getTenant(): int
     {
-        return $this->app;
+        return $this->tenant;
     }
 
     /**

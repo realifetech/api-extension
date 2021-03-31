@@ -22,14 +22,6 @@ class ApiKeyAccess
 {
     use DateStorageTrait;
 
-    const METHODS = [
-        'ANY'    => 'ANY',
-        'GET'    => 'GET',
-        'POST'   => 'POST',
-        'PUT'    => 'PUT',
-        'DELETE' => 'DELETE',
-    ];
-
     /**
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")

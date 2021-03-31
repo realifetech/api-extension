@@ -48,36 +48,36 @@ class AnalyticsListener
         $token = $request->headers->get('x-api-key');
 
         if ($apiKey = $this->apiKeyRepository->findByToken($token)) {
-            $appId = $apiKey->getApp();
+            $tenant = $apiKey->getTenant();
 
-            $this->logToken('api_key', $appId, $token, $path);
+            $this->logToken('api_key', $tenant, $token, $path);
         }
     }
 
     /**
      * @param string $type
-     * @param int $appId
+     * @param int $tenant
      * @param string $token
      * @param string $path
      */
-    private function logToken(string $type, int $appId, string $token, string $path): void
+    private function logToken(string $type, int $tenant, string $token, string $path): void
     {
-        $data = $this->getLogData($type, $this->cleanAppId($appId), $token, $path);
+        $data = $this->getLogData($type, $tenant, $token, $path);
 
         $this->analyticsRepository->log($data);
     }
 
     /**
      * @param string $type
-     * @param int $appId
+     * @param int $tenant
      * @param string $token
      * @param string $path
      * @return array
      */
-    private function getLogData(string $type, int $appId, string $token, string $path): array
+    private function getLogData(string $type, int $tenant, string $token, string $path): array
     {
         return [
-            'app' => $appId,
+            'app' => $tenant,
             'type' => $type,
             'token' => $this->maskString($token),
             'path' => $path,
@@ -92,18 +92,5 @@ class AnalyticsListener
     public function maskString(string $string): string
     {
         return substr($string, 0, 4) . str_repeat("*", strlen($string) - 4);
-    }
-
-    /**
-     * @param string $appId
-     * @return string
-     */
-    private function cleanAppId(string $appId): string
-    {
-        if (strpos($appId, '_0') !== false) {
-            $appId = trim(str_replace('_0', '', $appId), '0');
-        }
-
-        return $appId;
     }
 }

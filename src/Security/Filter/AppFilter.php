@@ -27,17 +27,19 @@ class AppFilter extends SQLFilter
             return '';
         }
 
-        $currentApp = $this->getParameter('currentApp');
+        $fieldName = 'tenant';
+
+        $currentTenant = $this->getParameter('currentTenant');
 
         if (empty($fieldName)) {
             return '';
         }
 
-        if ($currentApp && $fieldName != "id") {
+        if ($currentTenant) {
             if ($query) {
-                $query = $query . " AND " . $targetTableAlias . '.' . $fieldName . "=" . $currentApp;
+                $query = $query . " AND " . $targetTableAlias . '.' . $fieldName . "=" . $currentTenant;
             } else {
-                $query = $targetTableAlias . '.' . $fieldName . "=" . $currentApp;
+                $query = $targetTableAlias . '.' . $fieldName . "=" . $currentTenant;
             }
         }
 

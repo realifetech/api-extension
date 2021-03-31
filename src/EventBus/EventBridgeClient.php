@@ -24,7 +24,7 @@ class EventBridgeClient
         $this->env = $env;
     }
 
-    public function putEvent(int $app, string $name, string $detail)
+    public function putEvent(int $tenant, string $name, string $detail)
     {
         try {
             $result = $this->client->putEvents([
@@ -33,8 +33,8 @@ class EventBridgeClient
                         'Detail' => $detail,
                         'DetailType' => $name,
                         'EventBusName' => $this->getEventBusName(),
-                        'Resources' => ['apps/' . $app],
-                        'Source' => 'apiv3', // TODO payment
+                        'Resources' => ['apps/' . $tenant],
+                        'Source' => $this->env,
                         'Time' => time(),
                     ],
                 ]

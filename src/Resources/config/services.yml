@@ -24,7 +24,9 @@ services:
     class: RL\Security\Configurator\Configurator
     arguments:
       - "@doctrine.orm.entity_manager"
+      - "@security.token_storage"
       - "@annotation_reader"
+      - '@RL\Security\AuthTenantResolver'
     tags:
       - { name: kernel.event_listener, event: kernel.request,  priority: 5 }
 
@@ -54,6 +56,11 @@ services:
     tags:
       - { name: api_platform.doctrine.orm.query_extension.item }
 
+  RL\Security\AuthTenantResolver:
+    autowire: true
+    public: true
+    shared: true
+
   RL\EventListener\AnalyticsListener:
     arguments:
       - '@RL\Repository\ApiKeyRepository'
@@ -69,5 +76,6 @@ services:
     arguments:
       - '@service_container'
       - '@serializer'
+      - '@RL\Security\AuthTenantResolver'
     tags:
       - { name: doctrine.event_subscriber }

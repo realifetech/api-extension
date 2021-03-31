@@ -1,5 +1,6 @@
 <?php
 
+
 namespace RL\Security\Extension;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
@@ -7,21 +8,24 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\ORM\QueryBuilder;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class AppFilterExtension implements QueryItemExtensionInterface
 {
-    const DEFAULT_APP = 27;
-
     /** @var Reader */
     private Reader $reader;
 
     /** @var ObjectManager */
     private ObjectManager $em;
 
-    public function __construct(Reader $reader, ObjectManager $em)
+    /** @var TokenStorageInterface */
+    private TokenStorageInterface $tokenStorage;
+
+    public function __construct(Reader $reader, ObjectManager $em, TokenStorageInterface $tokenStorage)
     {
         $this->reader = $reader;
         $this->em = $em;
+        $this->tokenStorage = $tokenStorage;
     }
 
     public function applyToItem(
@@ -32,23 +36,30 @@ class AppFilterExtension implements QueryItemExtensionInterface
         string $operationName = null,
         array $context = []
     ): void {
+        $this->enableTenantFilter();
+    }
 
-        if (!$this->isApiRequest($context)) {
+    private function enableTenantFilter(): void
+    {
+        $currentTenant = $this->getTenant();
+
+        if (!$currentTenant) {
             return;
         }
 
-        $this->enableAppFilter();
-    }
-
-    private function isApiRequest(array $context): bool
-    {
-        return (bool) preg_match('/\/v\d+\//', $context['request_uri'] ?? null);
-    }
-
-    private function enableAppFilter(): void
-    {
-        $filter = $this->em->getFilters()->enable('app_filter');
-        $filter->setParameter('currentApp', self::DEFAULT_APP);
+        $filter = $this->em->getFilters()->enable('tenant_filter');
+        $filter->setParameter('currentTenant', $currentTenant);
         $filter->setAnnotationReader($this->reader);
+    }
+
+    private function getTenant()
+    {
+        $token = $this->tokenStorage->getToken();
+
+        if (!$token) {
+            return null;
+        }
+
+        return $token->getUser();
     }
 }
