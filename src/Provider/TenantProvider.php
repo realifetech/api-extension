@@ -6,7 +6,7 @@ use RL\Repository\ApiKeyRepository;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
-class AppProvider implements UserProviderInterface
+class TenantProvider implements UserProviderInterface
 {
     /** @var ApiKeyRepository */
     private ApiKeyRepository $apiKeyRepository;

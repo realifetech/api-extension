@@ -4,7 +4,7 @@ namespace RL\Security\Authenticator;
 
 use InvalidArgumentException;
 use RL\Exception\AccessDeniedException;
-use RL\Provider\AppProvider;
+use RL\Provider\TenantProvider;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\PreAuthenticatedToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -23,7 +23,7 @@ class ApiKeyAuthenticator implements SimplePreAuthenticatorInterface
         }
 
         /**
-         * @var $userProvider AppProvider
+         * @var $userProvider TenantProvider
          */
         if ($tokenRecord = $userProvider->validateTokenRouteAndMethod($token->getCredentials(), $route, $method)) {
             $token->setUser($tokenRecord);

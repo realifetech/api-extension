@@ -6,7 +6,7 @@ use Doctrine\Common\Annotations\Reader;
 use Doctrine\Persistence\ObjectManager;
 use RL\Exception\NoApiTokenException;
 use RL\Security\AuthTenantResolver;
-use RL\Security\Filter\AppFilter;
+use RL\Security\Filter\TenantFilter;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -44,7 +44,7 @@ class Configurator
 
     public function onKernelRequest(GetResponseEvent $event)
     {
-        /** @var AppFilter $filter */
+        /** @var TenantFilter $filter */
         $filter = $this->em->getFilters()->enable('tenant_filter');
 
         try {

@@ -49,7 +49,7 @@ services:
       - '@logger'
       - '%deployment_env%'
 
-  RL\Security\Extension\AppFilterExtension:
+  RL\Security\Extension\TenantFilterExtension:
     arguments:
       - "@annotation_reader"
       - "@doctrine.orm.entity_manager"

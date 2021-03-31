@@ -10,7 +10,7 @@ use Doctrine\Persistence\ObjectManager;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-class AppFilterExtension implements QueryItemExtensionInterface
+class TenantFilterExtension implements QueryItemExtensionInterface
 {
     /** @var Reader */
     private Reader $reader;

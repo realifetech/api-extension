@@ -77,7 +77,7 @@ class AnalyticsListener
     private function getLogData(string $type, int $tenant, string $token, string $path): array
     {
         return [
-            'app' => $tenant,
+            'tenant' => $tenant,
             'type' => $type,
             'token' => $this->maskString($token),
             'path' => $path,

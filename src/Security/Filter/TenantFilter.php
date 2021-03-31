@@ -6,10 +6,7 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Filter\SQLFilter;
 use Doctrine\Common\Annotations\Reader;
 
-/**
- * Class AppFilter
- */
-class AppFilter extends SQLFilter
+class TenantFilter extends SQLFilter
 {
     /** @var Reader */
     protected Reader $reader;

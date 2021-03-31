@@ -19,6 +19,6 @@ class AnalyticsRepository
 
     public function log(array $data)
     {
-        $this->logger->info(@$data['app'], $data);
+        $this->logger->info(@$data['tenant'], $data);
     }
 }

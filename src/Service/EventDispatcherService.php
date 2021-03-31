@@ -29,7 +29,7 @@ class EventDispatcherService
     }
 
     /**
-     * @param int $app
+     * @param int $tenant
      * @param string $type
      * @param string $action
      * @param object|null $new
@@ -38,7 +38,7 @@ class EventDispatcherService
      * @param string $prefix
      */
     public function putEvent(
-        int $app,
+        int $tenant,
         string $type,
         string $action,
         $new = null,
@@ -63,7 +63,7 @@ class EventDispatcherService
                 AbstractObjectNormalizer::SKIP_NULL_VALUES => true
             ]);
 
-            $this->eventBridgeClient->putEvent($app, $name, $json);
+            $this->eventBridgeClient->putEvent($tenant, $name, $json);
         } catch (\Exception $exception) {
             $this->logger->critical($exception);
         }
