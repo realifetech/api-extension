@@ -69,6 +69,8 @@ services:
       - { name: kernel.event_listener, event: kernel.request , priority: 100 }
 
   RL\EventListener\EntityPreWriteSubscriber:
+    arguments:
+      - '@RL\Security\AuthTenantResolver'
     tags:
       - { name: kernel.event_subscriber }
 

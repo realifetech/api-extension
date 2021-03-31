@@ -24,7 +24,11 @@ class TenantFilter extends SQLFilter
             return '';
         }
 
-        $fieldName = 'tenant';
+        if ($this->hasParameter('tenant')) {
+            $fieldName = 'tenant';
+        } else {
+            $fieldName = 'app_id';
+        }
 
         $currentTenant = $this->getParameter('currentTenant');
 
