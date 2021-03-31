@@ -4,10 +4,7 @@ namespace RL\Routing;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Api\UrlGeneratorInterface;
-use ApiPlatform\Core\Exception\InvalidArgumentException;
-use ApiPlatform\Core\Exception\ItemNotFoundException;
 use Doctrine\Common\Annotations\Reader;
-use Doctrine\Common\Util\ClassUtils;
 use RL\Exception\InvalidIRIResourceException;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -36,15 +33,7 @@ class IriConverter implements IriConverterInterface
      */
     public function getItemFromIri(string $iri, array $context = []): object
     {
-        $requestedResource = isset($context['request_uri']) ? $this->router->match($context['request_uri']) : [];
-
-        $requestedResourceIsMicroserviceAware = isset($requestedResource['_api_resource_class']) ?
-            $this->isMicroserviceAware($requestedResource['_api_resource_class']):
-            true;
-
-        if (((isset($context['resource_class']) && $this->isMicroserviceAware($context['resource_class']) ||
-                    !$context['fetch_data']) && $this->isNotV4($iri)) && $requestedResourceIsMicroserviceAware
-        ) {
+        if (((isset($context['resource_class']) || !$context['fetch_data']) && $this->isNotV4($iri))) {
             $iri = self::V4_PREFIX . $iri;
         }
 
@@ -57,7 +46,8 @@ class IriConverter implements IriConverterInterface
     public function getIriFromItem($item, int $referenceType = UrlGeneratorInterface::ABS_PATH): string
     {
         $iri = $this->iriConverter->getIriFromItem($item, $referenceType);
-        if ($this->isMicroserviceAware(ClassUtils::getClass($item)) && $this->isV4($iri)) {
+
+        if ($this->isV4($iri)) {
             return $this->removePrefix($iri);
         }
 
@@ -72,7 +62,8 @@ class IriConverter implements IriConverterInterface
         int $referenceType = UrlGeneratorInterface::ABS_PATH
     ): string {
         $iri = $this->iriConverter->getIriFromResourceClass($resourceClass, $referenceType);
-        if ($this->isMicroserviceAware($resourceClass) && $this->isV4($iri)) {
+
+        if ($this->isV4($iri)) {
             return $this->removePrefix($iri);
         }
 
@@ -99,26 +90,6 @@ class IriConverter implements IriConverterInterface
         int $referenceType = UrlGeneratorInterface::ABS_PATH
     ): string {
         return $this->iriConverter->getSubresourceIriFromResourceClass($resourceClass, $identifiers, $referenceType);
-    }
-
-    /**
-     * @param string $resourceClass
-     * @return boolean
-     */
-    private function isMicroserviceAware(string $resourceClass): bool
-    {
-        try {
-            $class = new \ReflectionClass($resourceClass);
-            if ($this->reader->getClassAnnotation(
-                $class,
-                'LS\ApiBundle\Annotation\MicroserviceAware'
-            )) {
-                return true;
-            }
-        } catch (\ReflectionException $e) {
-        }
-
-        return false;
     }
 
     /**
@@ -228,23 +199,5 @@ class IriConverter implements IriConverterInterface
         }
 
         return $resources;
-    }
-
-    public function getIdFromIri(string $iri): ?int
-    {
-        try {
-            return $this->getItemFromIri($iri, ['fetch_data' => false])->getId();
-        } catch (ItemNotFoundException $e) {
-            return $this->extractIdFromIri($iri);
-        } catch (InvalidArgumentException $e) {
-            return null;
-        }
-    }
-
-    protected function extractIdFromIri(string $iri): ?int
-    {
-        preg_match('/[^\/]+$/', $iri, $matches);
-
-        return $matches[0] ?? null;
     }
 }
