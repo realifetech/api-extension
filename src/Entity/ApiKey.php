@@ -7,7 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\UniqueConstraint;
-use Rl\Traits\DateStorageTrait;
+use RL\Traits\DateStorageTrait;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass="RL\Repository\ApiKeyRepository")
@@ -20,7 +21,7 @@ use Rl\Traits\DateStorageTrait;
  * })
  * @ORM\HasLifecycleCallbacks()
  */
-class ApiKey
+class ApiKey implements UserInterface
 {
     use DateStorageTrait;
 
@@ -32,7 +33,7 @@ class ApiKey
     private int $id;
 
     /**
-     * @ORM\Column(type="integer", name="app")
+     * @ORM\Column(type="integer", name="app_id")
      */
     private int $app;
 
@@ -99,27 +100,11 @@ class ApiKey
     }
 
     /**
-     * @param string $token
-     */
-    public function setToken(string $token): void
-    {
-        $this->token = $token;
-    }
-
-    /**
      * @return string
      */
     public function getStatus(): string
     {
         return $this->status;
-    }
-
-    /**
-     * @param string $status
-     */
-    public function setStatus(string $status): void
-    {
-        $this->status = $status;
     }
 
     /**
@@ -131,27 +116,11 @@ class ApiKey
     }
 
     /**
-     * @param DateTime|null $createdAt
-     */
-    public function setCreatedAt(?DateTime $createdAt): void
-    {
-        $this->createdAt = $createdAt;
-    }
-
-    /**
      * @return DateTime|null
      */
     public function getUpdatedAt(): ?DateTime
     {
         return $this->updatedAt;
-    }
-
-    /**
-     * @param DateTime|null $updatedAt
-     */
-    public function setUpdatedAt(?DateTime $updatedAt): void
-    {
-        $this->updatedAt = $updatedAt;
     }
 
     /**
@@ -163,14 +132,6 @@ class ApiKey
     }
 
     /**
-     * @param DateTime|null $expireAt
-     */
-    public function setExpireAt(?DateTime $expireAt): void
-    {
-        $this->expireAt = $expireAt;
-    }
-
-    /**
      * @return ArrayCollection
      */
     public function getApiKeyAccesses()
@@ -178,31 +139,25 @@ class ApiKey
         return $this->apiKeyAccesses;
     }
 
-    /**
-     * @param array $apiKeyAccess
-     */
-    public function setApiKeyAccesses(array $apiKeyAccess)
+    public function getUsername()
     {
-        $this->apiKeyAccesses = $apiKeyAccess;
+        return $this->token;
     }
 
-    /**
-     * @param ApiKeyAccess $apiKeyAccess
-     */
-    public function addApiKeyAccess(ApiKeyAccess $apiKeyAccess)
+    public function getRoles()
     {
-        if (!$this->apiKeyAccesses->contains($apiKeyAccess)) {
-            $apiKeyAccess->setApiKey($this);
-            $this->apiKeyAccesses[] = $apiKeyAccess;
-        }
+        return array('ROLE_USER');
     }
 
-    /**
-     * @param ApiKeyAccess $apiKeyAccess
-     * @return bool
-     */
-    public function removeApiKeyAccess(ApiKeyAccess $apiKeyAccess): bool
+    public function getPassword()
     {
-        return $this->apiKeyAccesses->removeElement($apiKeyAccess);
+    }
+
+    public function getSalt()
+    {
+    }
+
+    public function eraseCredentials()
+    {
     }
 }

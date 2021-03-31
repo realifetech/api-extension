@@ -46,9 +46,8 @@ class AppFilter extends SQLFilter
 
     /**
      * @param Reader $reader
-     * @return Reader
      */
-    public function setAnnotationReader(Reader $reader): Reader
+    public function setAnnotationReader(Reader $reader)
     {
         $this->reader = $reader;
     }

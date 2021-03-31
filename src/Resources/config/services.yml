@@ -1,9 +1,9 @@
 services:
   RL\:
-    resource: '../../src/*'
+    resource: '../../../src/*'
     autowire: true
     public: true
-    exclude: '../../src/{Repository,Tests,Exception,Security}'
+    exclude: '../../../src/{Repository,Tests,Exception,Security}'
 
   RL\Repository\ApiKeyRepository:
     factory: 'Doctrine\ORM\EntityManagerInterface:getRepository'
@@ -18,7 +18,7 @@ services:
   RL\Repository\AnalyticsRepository:
     class: RL\Repository\AnalyticsRepository
     arguments:
-      - "@monolog.logger.api"
+      - "@logger"
 
   RL\Security\Configurator\Configurator:
     class: RL\Security\Configurator\Configurator
@@ -36,4 +36,38 @@ services:
     arguments:
       - '@api_platform.jsonld.normalizer.item'
     tags:
-      - { 'name': 'serializer.normalizer', priority: 10}
+      - { name: 'serializer.normalizer', priority: 10}
+
+  RL\EventBus\EventBridgeClient:
+    class: RL\EventBus\EventBridgeClient
+    public: true
+    autowire: true
+    arguments:
+      - '@eventbridge_client'
+      - '@logger'
+      - '%deployment_env%'
+
+  RL\Security\Extension\AppFilterExtension:
+    arguments:
+      - "@annotation_reader"
+      - "@doctrine.orm.entity_manager"
+    tags:
+      - { name: api_platform.doctrine.orm.query_extension.item }
+
+  RL\EventListener\AnalyticsListener:
+    arguments:
+      - '@RL\Repository\ApiKeyRepository'
+      - '@RL\Repository\AnalyticsRepository'
+    tags:
+      - { name: kernel.event_listener, event: kernel.request , priority: 100 }
+
+  RL\EventListener\EntityPreWriteSubscriber:
+    tags:
+      - { name: kernel.event_subscriber }
+
+  RL\EventListener\EntityActivitySubscriber:
+    arguments:
+      - '@service_container'
+      - '@serializer'
+    tags:
+      - { name: doctrine.event_subscriber }

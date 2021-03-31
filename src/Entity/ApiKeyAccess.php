@@ -80,27 +80,11 @@ class ApiKeyAccess
     }
 
     /**
-     * @param ApiKey $apiKey
-     */
-    public function setApiKey(ApiKey $apiKey): void
-    {
-        $this->apiKey = $apiKey;
-    }
-
-    /**
      * @return string
      */
     public function getRoute(): string
     {
         return $this->route;
-    }
-
-    /**
-     * @param string $route
-     */
-    public function setRoute(string $route): void
-    {
-        $this->route = $route;
     }
 
     /**
@@ -112,14 +96,6 @@ class ApiKeyAccess
     }
 
     /**
-     * @param string $method
-     */
-    public function setMethod(string $method): void
-    {
-        $this->method = $method;
-    }
-
-    /**
      * @return DateTime|null
      */
     public function getCreatedAt(): ?DateTime
@@ -128,26 +104,10 @@ class ApiKeyAccess
     }
 
     /**
-     * @param DateTime|null $createdAt
-     */
-    public function setCreatedAt(?DateTime $createdAt): void
-    {
-        $this->createdAt = $createdAt;
-    }
-
-    /**
      * @return DateTime|null
      */
     public function getUpdatedAt(): ?DateTime
     {
         return $this->updatedAt;
-    }
-
-    /**
-     * @param DateTime|null $updatedAt
-     */
-    public function setUpdatedAt(?DateTime $updatedAt): void
-    {
-        $this->updatedAt = $updatedAt;
     }
 }
