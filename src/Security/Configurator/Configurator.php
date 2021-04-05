@@ -2,63 +2,63 @@
 
 namespace RL\Security\Configurator;
 
-use Doctrine\Common\Annotations\Reader;
 use Doctrine\Persistence\ObjectManager;
-use RL\Exception\NoApiTokenException;
 use RL\Security\AuthTenantResolver;
 use RL\Security\Filter\TenantFilter;
+use RL\Exception\NoApiTokenException;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class Configurator
 {
     /** @var ObjectManager */
-    protected ObjectManager $em;
+    protected ObjectManager $defaultEntityManager;
+
+    /** @var ObjectManager */
+    protected ObjectManager $paymentEntityManager;
 
     /** @var TokenStorageInterface */
     protected TokenStorageInterface $tokenStorage;
-
-    /** @var Reader */
-    protected Reader $reader;
 
     /** @var AuthTenantResolver */
     private AuthTenantResolver $authTenantResolver;
 
     /**
-     * @param ObjectManager $em
+     * @param ObjectManager $defaultEntityManager
+     * @param ObjectManager $paymentEntityManager
      * @param TokenStorageInterface $tokenStorage
-     * @param Reader $reader
      * @param AuthTenantResolver $authTenantResolver
      */
     public function __construct(
-        ObjectManager $em,
+        ObjectManager $defaultEntityManager,
+        ObjectManager $paymentEntityManager,
         TokenStorageInterface $tokenStorage,
-        Reader $reader,
         AuthTenantResolver $authTenantResolver
     ) {
-        $this->em = $em;
+        $this->defaultEntityManager = $defaultEntityManager;
+        $this->paymentEntityManager = $paymentEntityManager;
         $this->tokenStorage = $tokenStorage;
-        $this->reader = $reader;
         $this->authTenantResolver = $authTenantResolver;
     }
 
     public function onKernelRequest(GetResponseEvent $event)
     {
-        /** @var TenantFilter $filter */
-        $filter = $this->em->getFilters()->enable('tenant_filter');
+        /** @var TenantFilter $defaultFilter */
+        $defaultFilter = $this->defaultEntityManager->getFilters()->enable('tenant_filter');
+
+        /** @var TenantFilter $paymentFilter */
+        $paymentFilter = $this->paymentEntityManager->getFilters()->enable('tenant_filter');
 
         try {
             $this->authTenantResolver->resolveMeta($this->tokenStorage);
 
             $tenant = $this->authTenantResolver->getTenant();
 
-            if ($tenant) {
-                $filter->setParameter('currentTenant', $tenant);
-
-                $filter->setAnnotationReader($this->reader);
-            }
+            $defaultFilter->setParameter('currentTenant', $tenant);
+            $paymentFilter->setParameter('currentTenant', $tenant);
         } catch (NoApiTokenException $e) {
-            $filter->setParameter('currentTenant', 0);
+            $defaultFilter->setParameter('currentTenant', 0);
+            $paymentFilter->setParameter('currentTenant', 0);
         }
     }
 }

@@ -5,11 +5,20 @@ namespace RL\Security\Filter;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Filter\SQLFilter;
 use Doctrine\Common\Annotations\Reader;
+use RL\Annotation\TenantAware;
 
 class TenantFilter extends SQLFilter
 {
     /** @var Reader */
     protected Reader $reader;
+
+    /**
+     * @param Reader $reader
+     */
+    public function setAnnotationReader(Reader $reader)
+    {
+        $this->reader = $reader;
+    }
 
     /**
      * @param ClassMetadata $targetEntity
@@ -24,34 +33,25 @@ class TenantFilter extends SQLFilter
             return '';
         }
 
-        if ($this->hasParameter('tenant')) {
-            $fieldName = 'tenant';
-        } else {
-            $fieldName = 'app_id';
+        /** @var TenantAware $tenantAware */
+        $tenantAware = $this->reader->getClassAnnotation($targetEntity->getReflectionClass(), TenantAware::class);
+
+        if (!$tenantAware) {
+            return '';
         }
 
-        $currentTenant = $this->getParameter('currentTenant');
+        $fieldName = $tenantAware->tenantFieldName;
 
         if (empty($fieldName)) {
             return '';
         }
 
-        if ($currentTenant) {
-            if ($query) {
-                $query = $query . " AND " . $targetTableAlias . '.' . $fieldName . "=" . $currentTenant;
-            } else {
-                $query = $targetTableAlias . '.' . $fieldName . "=" . $currentTenant;
-            }
+        $currentTenant = $this->getParameter('currentTenant');
+
+        if ($currentTenant && $fieldName != "id") {
+            $query = $targetTableAlias . '.' . $fieldName . "=" . $currentTenant;
         }
 
         return $query;
-    }
-
-    /**
-     * @param Reader $reader
-     */
-    public function setAnnotationReader(Reader $reader)
-    {
-        $this->reader = $reader;
     }
 }

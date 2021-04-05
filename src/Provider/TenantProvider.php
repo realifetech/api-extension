@@ -2,7 +2,10 @@
 
 namespace RL\Provider;
 
+use RL\Entity\ApiKey;
 use RL\Repository\ApiKeyRepository;
+use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
+use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
@@ -22,7 +25,11 @@ class TenantProvider implements UserProviderInterface
      */
     public function loadUserByUsername($username)
     {
-        //pass
+        $user = $this->apiKeyRepository->findByToken($username);
+
+        if (!$user) {
+            throw new AuthenticationCredentialsNotFoundException();
+        }
     }
 
     public function validateTokenRouteAndMethod($token, $route, $method)
@@ -51,6 +58,12 @@ class TenantProvider implements UserProviderInterface
      */
     public function refreshUser(UserInterface $user)
     {
+        if (!$user instanceof ApiKey) {
+            throw new UnsupportedUserException(sprintf(
+                'Expected an instance of RL\Entity\ApiKey, but got "%s".',
+                get_class($user)
+            ));
+        }
     }
 
     /**
@@ -58,5 +71,8 @@ class TenantProvider implements UserProviderInterface
      */
     public function supportsClass($class)
     {
+        $userClass = ApiKey::class;
+
+        return $userClass === $class || is_subclass_of($class, $userClass);
     }
 }

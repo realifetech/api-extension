@@ -17,11 +17,15 @@ class EventBridgeClient
     /** @var string */
     private string $env;
 
-    public function __construct(BaseEventBridgeClient $client, LoggerInterface $logger, string $env)
+    /** @var string */
+    private string $source;
+
+    public function __construct(BaseEventBridgeClient $client, LoggerInterface $logger, string $env, string $source)
     {
         $this->client = $client;
         $this->logger = $logger;
         $this->env = $env;
+        $this->source = $source;
     }
 
     public function putEvent(int $tenant, string $name, string $detail)
@@ -34,7 +38,7 @@ class EventBridgeClient
                         'DetailType' => $name,
                         'EventBusName' => $this->getEventBusName(),
                         'Resources' => ['apps/' . $tenant],
-                        'Source' => $this->env,
+                        'Source' => $this->source,
                         'Time' => time(),
                     ],
                 ]
