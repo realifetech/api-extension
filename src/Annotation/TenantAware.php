@@ -12,5 +12,5 @@ use Doctrine\Common\Annotations\Annotation\Required;
 final class TenantAware
 {
     /** @Required */
-    public $tenantFieldName;
+    public string $tenantFieldName;
 }

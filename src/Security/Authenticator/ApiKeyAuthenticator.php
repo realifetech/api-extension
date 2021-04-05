@@ -44,7 +44,7 @@ class ApiKeyAuthenticator implements SimplePreAuthenticatorInterface
         $apiKey = $request->headers->get('X-API-Key');
 
         if (!$apiKey) {
-            return null;
+            throw new AccessDeniedException(403, 'Authentication Required.');
         }
 
         $preAuthenticatedToken = new PreAuthenticatedToken('anon.', $apiKey, $providerKey);

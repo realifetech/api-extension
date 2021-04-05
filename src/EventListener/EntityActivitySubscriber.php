@@ -6,13 +6,11 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\Persistence\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
-use RL\Exception\NoApiTokenException;
 use RL\Security\AuthTenantResolver;
 use RL\Service\EventDispatcherService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class EntityActivitySubscriber implements EventSubscriber
 {
@@ -23,9 +21,6 @@ class EntityActivitySubscriber implements EventSubscriber
     /** @var ContainerInterface */
     private ContainerInterface $container;
 
-    /** @var SerializerInterface */
-    private SerializerInterface $serializer;
-
     /** @var AuthTenantResolver */
     private AuthTenantResolver $authTenantResolver;
 
@@ -34,11 +29,9 @@ class EntityActivitySubscriber implements EventSubscriber
 
     public function __construct(
         ContainerInterface $container,
-        SerializerInterface $serializer,
         AuthTenantResolver $authTenantResolver
     ) {
         $this->container = $container;
-        $this->serializer = $serializer;
         $this->authTenantResolver = $authTenantResolver;
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
     }
@@ -116,11 +109,7 @@ class EntityActivitySubscriber implements EventSubscriber
      */
     private function getShortName(object $object): string
     {
-        try {
-            return (new \ReflectionClass($object))->getShortName();
-        } catch (\ReflectionException $e) {
-            return 'object';
-        }
+        return (new \ReflectionClass($object))->getShortName();
     }
 
     /**

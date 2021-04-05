@@ -19,12 +19,11 @@ class AuthTenantResolver
 
     /**
      * @param TokenStorageInterface $tokenStorage
-     * @return array
      * @throws NoApiTokenException
      */
     public function resolveMeta(
         TokenStorageInterface $tokenStorage
-    ): array {
+    ): void {
         $token = $tokenStorage->getToken();
 
         if (!$token) {
@@ -32,13 +31,10 @@ class AuthTenantResolver
         }
 
         $tokenUser = $token->getUser();
-        $tenant = null;
 
-        if ($tokenUser && $tenant = $tokenUser->getTenant()) {
-            $this->tenant = $tenant;
+        if ($tokenUser) {
+            $this->tenant = (int) $tokenUser->getTenant();
         }
-
-        return ['tenant' => $this->tenant];
     }
 
     /**

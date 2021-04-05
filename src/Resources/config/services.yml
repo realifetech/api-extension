@@ -23,8 +23,8 @@ services:
   RL\Security\Configurator\Configurator:
     class: RL\Security\Configurator\Configurator
     arguments:
-      - '@doctrine.orm.default_entity_manager'
       - '@doctrine.orm.payment_entity_manager'
+      - '@annotation_reader'
       - '@security.token_storage'
       - '@RL\Security\AuthTenantResolver'
     tags:
@@ -48,6 +48,7 @@ services:
       - '@eventbridge_client'
       - '@logger'
       - '%deployment_env%'
+      - '%source%'
 
   RL\Security\Extension\TenantFilterExtension:
     arguments:
@@ -60,6 +61,13 @@ services:
     autowire: true
     public: true
     shared: true
+
+  RL\EventListener\ExceptionListener:
+    arguments:
+      - '@logger'
+      - '@kernel'
+    tags:
+      - { name: kernel.event_listener, event: kernel.exception }
 
   RL\EventListener\AnalyticsListener:
     arguments:
@@ -77,7 +85,11 @@ services:
   RL\EventListener\EntityActivitySubscriber:
     arguments:
       - '@service_container'
-      - '@serializer'
       - '@RL\Security\AuthTenantResolver'
     tags:
       - { name: doctrine.event_subscriber }
+
+  RL\Routing\IriConverter:
+    decorates: 'api_platform.iri_converter'
+    arguments:
+      - '@RL\Routing\IriConverter.inner'

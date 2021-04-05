@@ -161,4 +161,29 @@ class IriConverter implements IriConverterInterface
     {
         return preg_match('#'.self::V4_PREFIX.'#', $iri) === 1;
     }
+
+    /**
+     * @param string $resourcePrefix
+     * @param array $resources
+     * @param string|null $subpropertyName
+     * @return array
+     */
+    public function extractIRIs(string $resourcePrefix, array $resources, string $subpropertyName = null): array
+    {
+        foreach ($resources as &$resource) {
+            $resource = $this->convertResourceIDtoIRI($resourcePrefix, $resource[$subpropertyName]);
+        }
+
+        return $resources;
+    }
+
+    /**
+     * @param string $resourcePrefix
+     * @param int|string $id
+     * @return string
+     */
+    public function convertResourceIDtoIRI(string $resourcePrefix, $id): string
+    {
+        return $resourcePrefix.(int)$id;
+    }
 }
