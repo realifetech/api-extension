@@ -1,0 +1,95 @@
+services:
+  RL\:
+    resource: '../../../src/*'
+    autowire: true
+    public: true
+    exclude: '../../../src/{Repository,Tests,Exception,Security}'
+
+  RL\Repository\ApiKeyRepository:
+    factory: 'Doctrine\ORM\EntityManagerInterface:getRepository'
+    arguments:
+      - RL\Entity\ApiKey
+
+  RL\Repository\ApiKeyAccessRepository:
+    factory: 'Doctrine\ORM\EntityManagerInterface:getRepository'
+    arguments:
+      - RL\Entity\ApiKeyAccess
+
+  RL\Repository\AnalyticsRepository:
+    class: RL\Repository\AnalyticsRepository
+    arguments:
+      - '@logger'
+
+  RL\Security\Configurator\Configurator:
+    class: RL\Security\Configurator\Configurator
+    arguments:
+      - '@doctrine.orm.payment_entity_manager'
+      - '@annotation_reader'
+      - '@security.token_storage'
+      - '@RL\Security\AuthTenantResolver'
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+  RL\Security\Authenticator\ApiKeyAuthenticator:
+    autowire: true
+
+  RL\Serializers\IriResourcesNormalizer:
+    autowire: true
+    arguments:
+      - '@api_platform.jsonld.normalizer.item'
+    tags:
+      - { name: 'serializer.normalizer', priority: 10}
+
+  RL\EventBus\EventBridgeClient:
+    class: RL\EventBus\EventBridgeClient
+    public: true
+    autowire: true
+    arguments:
+      - '@eventbridge_client'
+      - '@logger'
+      - '%deployment_env%'
+      - '%source%'
+
+  RL\Security\Extension\TenantFilterExtension:
+    arguments:
+      - '@annotation_reader'
+      - '@doctrine.orm.entity_manager'
+    tags:
+      - { name: api_platform.doctrine.orm.query_extension.item }
+
+  RL\Security\AuthTenantResolver:
+    autowire: true
+    public: true
+    shared: true
+
+  RL\EventListener\ExceptionListener:
+    arguments:
+      - '@logger'
+      - '@kernel'
+    tags:
+      - { name: kernel.event_listener, event: kernel.exception }
+
+  RL\EventListener\AnalyticsListener:
+    arguments:
+      - '@RL\Repository\ApiKeyRepository'
+      - '@RL\Repository\AnalyticsRepository'
+    tags:
+      - { name: kernel.event_listener, event: kernel.request , priority: 100 }
+
+  RL\EventListener\EntityPreWriteSubscriber:
+    arguments:
+      - '@RL\Security\AuthTenantResolver'
+    tags:
+      - { name: kernel.event_subscriber }
+
+  RL\EventListener\EntityActivitySubscriber:
+    arguments:
+      - '@service_container'
+      - '@RL\Security\AuthTenantResolver'
+    tags:
+      - { name: doctrine.event_subscriber }
+
+  RL\Routing\IriConverter:
+    decorates: 'api_platform.iri_converter'
+    arguments:
+      - '@RL\Routing\IriConverter.inner'
