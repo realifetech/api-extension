@@ -5,7 +5,7 @@
     "license": "MIT",
     "require": {
         "php": ">=7.4",
-        "symfony/symfony": "^4.4",
+        "symfony/symfony": "^5.2",
         "doctrine/orm": "^2.8",
         "nesbot/carbon": "^2.46",
         "api-platform/api-pack": "^1.3",
