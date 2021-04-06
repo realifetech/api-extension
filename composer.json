@@ -1,6 +1,6 @@
 {
-    "name": "realifetech/api-key-authenticator",
-    "description": "RealifeTech Api Key Authenticator",
+    "name": "realifetech/api-extension",
+    "description": "RealifeTech Api Extension",
     "type": "library",
     "license": "MIT",
     "require": {
