@@ -23,7 +23,7 @@ services:
   RL\Security\Configurator\Configurator:
     class: RL\Security\Configurator\Configurator
     arguments:
-      - '@doctrine.orm.payment_entity_manager'
+      - '@doctrine.orm.default_entity_manager'
       - '@annotation_reader'
       - '@security.token_storage'
       - '@RL\Security\AuthTenantResolver'
@@ -47,7 +47,7 @@ services:
     arguments:
       - '@eventbridge_client'
       - '@logger'
-      - '%deployment_env%'
+      - '%app_env%'
       - '%source%'
 
   RL\Security\Extension\TenantFilterExtension:
@@ -93,3 +93,5 @@ services:
     decorates: 'api_platform.iri_converter'
     arguments:
       - '@RL\Routing\IriConverter.inner'
+      - '@annotations.cached_reader'
+      - '@router.default'
