@@ -23,7 +23,7 @@ services:
   RL\Security\Configurator\Configurator:
     class: RL\Security\Configurator\Configurator
     arguments:
-      - '@doctrine.orm.payment_entity_manager'
+      - '@doctrine.orm.default_entity_manager'
       - '@annotation_reader'
       - '@security.token_storage'
       - '@RL\Security\AuthTenantResolver'
