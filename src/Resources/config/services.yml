@@ -47,7 +47,7 @@ services:
     arguments:
       - '@eventbridge_client'
       - '@logger'
-      - '%deployment_env%'
+      - '%app_env%'
       - '%source%'
 
   RL\Security\Extension\TenantFilterExtension:
@@ -93,3 +93,5 @@ services:
     decorates: 'api_platform.iri_converter'
     arguments:
       - '@RL\Routing\IriConverter.inner'
+      - '@annotations.cached_reader'
+      - '@router.default'
