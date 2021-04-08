@@ -92,11 +92,27 @@ class ApiKey implements UserInterface
     }
 
     /**
+     * @param int $tenant
+     */
+    public function setTenant(int $tenant): void
+    {
+        $this->tenant = $tenant;
+    }
+
+    /**
      * @return string
      */
     public function getToken(): string
     {
         return $this->token;
+    }
+
+    /**
+     * @param string $token
+     */
+    public function setToken(string $token): void
+    {
+        $this->token = $token;
     }
 
     /**
@@ -108,11 +124,27 @@ class ApiKey implements UserInterface
     }
 
     /**
+     * @param string $status
+     */
+    public function setStatus(string $status): void
+    {
+        $this->status = $status;
+    }
+
+    /**
      * @return DateTime|null
      */
     public function getCreatedAt(): ?DateTime
     {
         return $this->createdAt;
+    }
+
+    /**
+     * @param DateTime|null $createdAt
+     */
+    public function setCreatedAt(?DateTime $createdAt): void
+    {
+        $this->createdAt = $createdAt;
     }
 
     /**
@@ -124,11 +156,27 @@ class ApiKey implements UserInterface
     }
 
     /**
+     * @param DateTime|null $updatedAt
+     */
+    public function setUpdatedAt(?DateTime $updatedAt): void
+    {
+        $this->updatedAt = $updatedAt;
+    }
+
+    /**
      * @return DateTime|null
      */
     public function getExpireAt(): ?DateTime
     {
         return $this->expireAt;
+    }
+
+    /**
+     * @param DateTime|null $expireAt
+     */
+    public function setExpireAt(?DateTime $expireAt): void
+    {
+        $this->expireAt = $expireAt;
     }
 
     /**
