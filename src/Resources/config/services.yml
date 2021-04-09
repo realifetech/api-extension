@@ -47,8 +47,8 @@ services:
     arguments:
       - '@eventbridge_client'
       - '@logger'
-      - '%app_env%'
-      - '%source%'
+      - '%env(resolve:APP_ENV)%'
+      - '%env(resolve:APP_NAME)%'
 
   RL\Security\Extension\TenantFilterExtension:
     arguments:

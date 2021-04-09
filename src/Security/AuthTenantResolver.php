@@ -8,7 +8,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class AuthTenantResolver
 {
-    protected int $tenant;
+    protected int $tenant = 0;
 
     private ContainerInterface $container;
 
