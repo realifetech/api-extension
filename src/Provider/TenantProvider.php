@@ -45,12 +45,12 @@ class TenantProvider implements UserProviderInterface
                             $method,
                             $access->getMethod()
                         ) == 0)) {
-                    return $token;
+                    return true;
                 }
             }
         }
 
-        return null;
+        return false;
     }
 
     /**

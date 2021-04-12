@@ -50,13 +50,6 @@ services:
       - '%env(resolve:APP_ENV)%'
       - '%env(resolve:APP_NAME)%'
 
-  RL\Security\Extension\TenantFilterExtension:
-    arguments:
-      - '@annotation_reader'
-      - '@doctrine.orm.entity_manager'
-    tags:
-      - { name: api_platform.doctrine.orm.query_extension.item }
-
   RL\Security\AuthTenantResolver:
     autowire: true
     public: true
