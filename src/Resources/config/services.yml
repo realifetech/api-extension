@@ -6,14 +6,16 @@ services:
     exclude: '../../../src/{Repository,Tests,Exception,Security}'
 
   RL\Repository\ApiKeyRepository:
-    factory: 'Doctrine\ORM\EntityManagerInterface:getRepository'
+    factory: 'Doctrine\Common\Persistence\ManagerRegistry:getRepository'
     arguments:
       - RL\Entity\ApiKey
+      - authentication
 
   RL\Repository\ApiKeyAccessRepository:
-    factory: 'Doctrine\ORM\EntityManagerInterface:getRepository'
+    factory: 'Doctrine\Common\Persistence\ManagerRegistry:getRepository'
     arguments:
       - RL\Entity\ApiKeyAccess
+      - authentication
 
   RL\Repository\AnalyticsRepository:
     class: RL\Repository\AnalyticsRepository
